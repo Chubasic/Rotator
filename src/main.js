@@ -1,4 +1,4 @@
-//window.onload(__init__());
+
 const EventEmitter = require('events');
 const emitter = new EventEmitter();
 const xhr = new XMLHttpRequest();
@@ -50,19 +50,7 @@ class Rotator{
             }else {return;}
     }
 
-    request(){
-        xhr.open('GET', apiURL, true);
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                console.log('Request to server');
-                let data = JSON.parse(xhr.responseText);
-                this.extractData(data);
-            } else {
-                console.log(xhr.readyState);
-            }
-        };
-        xhr.send();
-    }
+
     extractData(res){
         console.log('Extract');
         //this.apiData = res['urls'];
@@ -111,11 +99,33 @@ class Player{
 }
 
 
-let kil = new Rotator();
-kil.request();
-//console.warn(kil.debug());
-//let pl = new Player();
-//pl.global();
+let instance = new Rotator();
+request();
 
 
-//console.log(apiURL);
+function request(){
+    const promise = new Promise(function (resolve, reject) {
+        xhr.open('GET', apiURL, true);
+        xhr.onreadystatechange = () => {
+            xhr.onload = () =>{
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(`Request to server.  Status ${xhr.statusText}`);
+                    let data;
+                    resolve(data = JSON.parse(xhr.responseText));
+                    instance.extractData(data);
+                } else {
+                    console.log(xhr.statusText);
+                    console.log(xhr.readyState);
+                }
+            };
+            xhr.onerror = () =>{
+                reject(xhr.statusText);
+            }
+        };
+        xhr.send();
+    });
+
+}
+
+
+
